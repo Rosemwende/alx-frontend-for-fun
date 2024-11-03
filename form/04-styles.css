@@ -719,3 +719,20 @@ textarea:focus {
     font-style: italic;
     font-size: var(--font-size-small);
 }
+/* Button styles
+    ============================= */
+.button {
+    padding: 0.5rem 1rem;
+    background-color: #007BFF; /* Primary color */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.button-primary {
+    background-color: #0056b3; /* Darker shade for primary button */
+}
+
+.button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
