@@ -182,7 +182,6 @@ a:active {
 
 .visually-hidden:not(:focus):not(:active) {
   position: absolute !important;
-  padding: .7rem;
   height: 1px;
   width: 1px;
   overflow: hidden;
@@ -196,6 +195,7 @@ a:active {
 
 .skip-link {
     position: fixed;
+    padding: 0.7rem;
     left: 0;
     top: 0;
     z-index: 10;
