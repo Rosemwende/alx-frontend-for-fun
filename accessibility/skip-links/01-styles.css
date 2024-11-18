@@ -182,6 +182,7 @@ a:active {
 
 .visually-hidden:not(:focus):not(:active) {
   position: absolute !important;
+  padding: .7rem;
   height: 1px;
   width: 1px;
   overflow: hidden;
