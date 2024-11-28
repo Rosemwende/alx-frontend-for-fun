@@ -1,0 +1,10 @@
+/* This Sass file uses nested declarations to style body and p tags */
+
+body {
+  margin: 0;
+  padding: 0;
+
+  p {
+    margin: 10px;
+  }
+}
