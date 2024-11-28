@@ -1,0 +1,9 @@
+/* This Sass file uses nested declarations to style elements and the first child elements with a specific class inside body */
+
+body {
+  color: #3D3D3D;
+
+  > .red {
+    color: #FF0000;
+  }
+}
