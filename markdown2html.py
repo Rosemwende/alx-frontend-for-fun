@@ -30,7 +30,7 @@ def main():
     output_file = sys.argv[2]
 
     if not os.path.exists(input_file):
-        print(f"Missing {input_file}", file=sys.stderr)
+        print("Missing {}".format(input_file), file=sys.stderr)
         sys.exit(1)
 
     markdown_to_html(input_file, output_file)
