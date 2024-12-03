@@ -3,6 +3,7 @@ import sys
 import os
 import markdown
 
+
 def markdown_to_html(input_file, output_file):
     """Converts a markdown file to an HTML file"""
     try:
@@ -17,6 +18,7 @@ def markdown_to_html(input_file, output_file):
     except FileNotFoundError:
         print(f"Missing {input_file}", file=sys.stderr)
         sys.exit(1)
+
 
 def main():
     """Main function to handle the arguments and conversion"""
@@ -33,6 +35,7 @@ def main():
 
     markdown_to_html(input_file, output_file)
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
