@@ -16,7 +16,7 @@ def markdown_to_html(input_file, output_file):
             html_file.write(html_content)
 
     except FileNotFoundError:
-        print(f"Missing {input_file}", file=sys.stderr)
+        print("Missing {}".format(input_file), file=sys.stderr)
         sys.exit(1)
 
 
