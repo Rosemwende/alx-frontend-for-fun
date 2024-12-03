@@ -1,0 +1,35 @@
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    margin: 10px 0;
+    position: relative;
+    padding-left: 40px;
+}
+
+.icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: url('0-sprite.png') no-repeat;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.i-html {
+    background-position: 0 0;
+}
+
+.i-css {
+    background-position: -24px 0;
+}
+
+.i-js {
+    background-position: -48px 0;
+}
