@@ -1,14 +1,76 @@
 #!/usr/bin/python3
 """
-A script to convert a Markdown file to an HTML file
+Markdown to HTML converter
 """
-
 import sys
 import os
 import re
 
-if __name__ == "__main__":
+def parse_markdown_to_html(input_file, output_file):
+    try:
+        with open(input_file, 'r') as md_file:
+            lines = md_file.readlines()
 
+        html_lines = []
+        in_list = False
+        list_type = None
+
+        for line in lines:
+            line = line.rstrip()
+
+            heading_match = re.match(r'^(#{1,6}) (.+)', line)
+            if heading_match:
+                level = len(heading_match.group(1))
+                content = heading_match.group(2)
+                html_lines.append(f'<h{level}>{content}</h{level}>')
+                continue
+
+            if line.startswith('- '):
+                if not in_list:
+                    html_lines.append('<ul>')
+                    in_list = True
+                    list_type = 'ul'
+                html_lines.append(f'<li>{line[2:]}</li>')
+                continue
+
+            if line.startswith('* '):
+                if not in_list:
+                    html_lines.append('<ol>')
+                    in_list = True
+                    list_type = 'ol'
+                html_lines.append(f'<li>{line[2:]}</li>')
+                continue
+
+            if in_list and not (line.startswith('- ') or line.startswith('* ')):
+                html_lines.append(f'</{list_type}>')
+                in_list = False
+                list_type = None
+
+            line = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', line)
+            line = re.sub(r'__(.+?)__', r'<em>\1</em>', line)
+
+            if line.strip():
+                if not html_lines or not html_lines[-1].startswith('<p>'):
+                    html_lines.append('<p>')
+                else:
+                    html_lines[-1] += '<br/>'
+                html_lines[-1] += line
+            elif html_lines and html_lines[-1].startswith('<p>'):
+                html_lines[-1] += '</p>'
+
+        if in_list:
+            html_lines.append(f'</{list_type}>')
+        if html_lines and html_lines[-1].startswith('<p>') and not html_lines[-1].endswith('</p>'):
+            html_lines[-1] += '</p>'
+
+        with open(output_file, 'w') as html_file:
+            html_file.write('\n'.join(html_lines) + '\n')
+
+    except FileNotFoundError:
+        print(f"Missing {input_file}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: ./markdown2html.py README.md README.html", file=sys.stderr)
         sys.exit(1)
@@ -16,96 +78,4 @@ if __name__ == "__main__":
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    if not os.path.isfile(input_file):
-        print(f"Missing {input_file}", file=sys.stderr)
-        sys.exit(1)
-
-    try:
-        with open(input_file, 'r') as md_file:
-            content = md_file.readlines()
-
-        html_lines = []
-        in_ulist = False
-        in_olist = False
-        in_paragraph = False
-
-        for line in content:
-            line = line.rstrip()
-
-            heading_match = re.match(r'^(#{1,6})\s+(.*)', line)
-            if heading_match:
-                if in_ulist:
-                    html_lines.append("</ul>")
-                    in_ulist = False
-                if in_olist:
-                    html_lines.append("</ol>")
-                    in_olist = False
-                if in_paragraph:
-                    html_lines.append("</p>")
-                    in_paragraph = False
-                heading_level = len(heading_match.group(1))
-                heading_text = heading_match.group(2).strip()
-                html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
-
-            elif line.startswith('- '):
-                if in_olist:
-                    html_lines.append("</ol>")
-                    in_olist = False
-                if in_paragraph:
-                    html_lines.append("</p>")
-                    in_paragraph = False
-                if not in_ulist:
-                    html_lines.append("<ul>")
-                    in_ulist = True
-                list_item = line[2:].strip()
-                html_lines.append(f"<li>{list_item}</li>")
-
-            elif line.startswith('* '):
-                if in_ulist:
-                    html_lines.append("</ul>")
-                    in_ulist = False
-                if in_paragraph:
-                    html_lines.append("</p>")
-                    in_paragraph = False
-                if not in_olist:
-                    html_lines.append("<ol>")
-                    in_olist = True
-                list_item = line[2:].strip()
-                html_lines.append(f"<li>{list_item}</li>")
-
-            elif line.strip():
-                if in_ulist:
-                    html_lines.append("</ul>")
-                    in_ulist = False
-                if in_olist:
-                    html_lines.append("</ol>")
-                    in_olist = False
-                if not in_paragraph:
-                    html_lines.append("<p>")
-                    in_paragraph = True
-                else:
-                    html_lines.append("<br/>")
-                html_lines.append(line)
-
-            else:
-                if in_paragraph:
-                    html_lines.append("</p>")
-                    in_paragraph = False
-
-        if in_ulist:
-            html_lines.append("</ul>")
-        if in_olist:
-            html_lines.append("</ol>")
-        if in_paragraph:
-            html_lines.append("</p>")
-
-        html_content = "\n".join(html_lines)
-
-        with open(output_file, 'w') as html_file:
-            html_file.write(html_content)
-
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    sys.exit(0)
+    parse_markdown_to_html(input_file, output_file)
