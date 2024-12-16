@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter
+A script to convert Markdown files to HTML
 """
 import sys
 import os
