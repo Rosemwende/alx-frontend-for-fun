@@ -1,81 +1,89 @@
 #!/usr/bin/python3
 """
-A script to convert Markdown files to HTML
+Markdown to HTML converter script
 """
+
 import sys
-import os
 import re
+import hashlib
 
-def parse_markdown_to_html(input_file, output_file):
+def process_markdown_line(line):
+    """Converts a single line of Markdown to HTML."""
+    heading_match = re.match(r'^(#{1,6}) (.+)', line)
+    if heading_match:
+        level = len(heading_match.group(1))
+        content = heading_match.group(2)
+        return f"<h{level}>{content}</h{level}>"
+
+    if line.startswith('- '):
+        content = line[2:].strip()
+        return f"<li>{content}</li>", 'ul'
+
+    if line.startswith('* '):
+        content = line[2:].strip()
+        return f"<li>{content}</li>", 'ol'
+
+    line = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', line)
+
+    line = re.sub(r'__(.*?)__', r'<em>\1</em>', line)
+
+    line = re.sub(r'\[\[(.*?)\]\]', lambda m: hashlib.md5(m.group(1).encode()).hexdigest(), line)
+
+    line = re.sub(r'\(\((.*?)\)\)', lambda m: m.group(2).replace('c', '').replace('C', ''), line)
+
+    line = line.replace('\n', '<br/>')
+
+    return f"<p>{line.strip()}</p>"
+
+def convert_markdown_to_html(input_file, output_file):
+    """Converts a Markdown file to an HTML file."""
     try:
-        with open(input_file, 'r') as md_file:
-            lines = md_file.readlines()
+        with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
+            in_list = False
+            list_type = ''
 
-        html_lines = []
-        in_list = False
-        list_type = None
+            for line in infile:
+                line = line.rstrip()
+                if not line:
+                    if in_list:
+                        outfile.write(f"</{list_type}>\n")
+                        in_list = False
+                        list_type = ''
+                    continue
 
-        for line in lines:
-            line = line.rstrip()
+                result = process_markdown_line(line)
 
-            heading_match = re.match(r'^(#{1,6}) (.+)', line)
-            if heading_match:
-                level = len(heading_match.group(1))
-                content = heading_match.group(2)
-                html_lines.append(f'<h{level}>{content}</h{level}>')
-                continue
-
-            if line.startswith('- '):
-                if not in_list:
-                    html_lines.append('<ul>')
-                    in_list = True
-                    list_type = 'ul'
-                html_lines.append(f'<li>{line[2:]}</li>')
-                continue
-
-            if line.startswith('* '):
-                if not in_list:
-                    html_lines.append('<ol>')
-                    in_list = True
-                    list_type = 'ol'
-                html_lines.append(f'<li>{line[2:]}</li>')
-                continue
-
-            if in_list and not (line.startswith('- ') or line.startswith('* ')):
-                html_lines.append(f'</{list_type}>')
-                in_list = False
-                list_type = None
-   
-            line = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', line)
-            line = re.sub(r'__(.+?)__', r'<em>\1</em>', line)
-
-            if line.strip():
-                if not html_lines or not html_lines[-1].startswith('<p>'):
-                    html_lines.append('<p>')
+                if isinstance(result, tuple):
+                    html_line, current_list_type = result
+                    if not in_list:
+                        outfile.write(f"<{current_list_type}>\n")
+                        in_list = True
+                        list_type = current_list_type
+                    outfile.write(f"{html_line}\n")
                 else:
-                    html_lines[-1] += '<br/>'
-                html_lines[-1] += line
-            elif html_lines and html_lines[-1].startswith('<p>'):
-                html_lines[-1] += '</p>'
+                    if in_list:
+                        outfile.write(f"</{list_type}>\n")
+                        in_list = False
+                        list_type = ''
+                    outfile.write(f"{result}\n")
 
-        if in_list:
-            html_lines.append(f'</{list_type}>')
-        if html_lines and html_lines[-1].startswith('<p>') and not html_lines[-1].endswith('</p>'):
-            html_lines[-1] += '</p>'
-
-        with open(output_file, 'w') as html_file:
-            html_file.write('\n'.join(html_lines) + '\n')
-
+            if in_list:
+                outfile.write(f"</{list_type}>\n")
     except FileNotFoundError:
         print(f"Missing {input_file}", file=sys.stderr)
         sys.exit(1)
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the script."""
     if len(sys.argv) < 3:
-        print("Usage: ./markdown2html.py README.md README.html", file=sys.stderr)
+        print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
         sys.exit(1)
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
 
-    parse_markdown_to_html(input_file, output_file)
+    convert_markdown_to_html(input_file, output_file)
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
