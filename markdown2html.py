@@ -8,6 +8,7 @@ import os
 import re
 
 if __name__ == "__main__":
+
     if len(sys.argv) < 3:
         print("Usage: ./markdown2html.py README.md README.html", file=sys.stderr)
         sys.exit(1)
@@ -24,16 +25,35 @@ if __name__ == "__main__":
             content = md_file.readlines()
 
         html_lines = []
+        in_list = False
 
         for line in content:
+            line = line.strip()
 
             heading_match = re.match(r'^(#{1,6})\s+(.*)', line)
             if heading_match:
+                if in_list:
+                    html_lines.append("</ul>")
+                    in_list = False
                 heading_level = len(heading_match.group(1))
                 heading_text = heading_match.group(2).strip()
                 html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
+
+            elif line.startswith('- '):
+                if not in_list:
+                    html_lines.append("<ul>")
+                    in_list = True
+                list_item = line[2:].strip()
+                html_lines.append(f"<li>{list_item}</li>")
+
             else:
-                html_lines.append(line.strip())
+                if in_list:
+                    html_lines.append("</ul>")
+                    in_list = False
+                html_lines.append(line)
+
+        if in_list:
+            html_lines.append("</ul>")
 
         html_content = "\n".join(html_lines)
 
