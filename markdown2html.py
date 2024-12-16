@@ -5,6 +5,7 @@ A script to convert a Markdown file to an HTML file
 
 import sys
 import os
+import re
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -20,9 +21,21 @@ if __name__ == "__main__":
 
     try:
         with open(input_file, 'r') as md_file:
-            content = md_file.read()
+            content = md_file.readlines()
 
-        html_content = f"<html><body>{content}</body></html>"
+        html_lines = []
+
+        for line in content:
+
+            heading_match = re.match(r'^(#{1,6})\s+(.*)', line)
+            if heading_match:
+                heading_level = len(heading_match.group(1))
+                heading_text = heading_match.group(2).strip()
+                html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
+            else:
+                html_lines.append(line.strip())
+
+        html_content = "\n".join(html_lines)
 
         with open(output_file, 'w') as html_file:
             html_file.write(html_content)
