@@ -25,35 +25,57 @@ if __name__ == "__main__":
             content = md_file.readlines()
 
         html_lines = []
-        in_list = False
+        in_ulist = False
+        in_olist = False
 
         for line in content:
             line = line.strip()
 
             heading_match = re.match(r'^(#{1,6})\s+(.*)', line)
             if heading_match:
-                if in_list:
+                if in_ulist:
                     html_lines.append("</ul>")
-                    in_list = False
+                    in_ulist = False
+                if in_olist:
+                    html_lines.append("</ol>")
+                    in_olist = False
                 heading_level = len(heading_match.group(1))
                 heading_text = heading_match.group(2).strip()
                 html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
 
             elif line.startswith('- '):
-                if not in_list:
+                if in_olist:
+                    html_lines.append("</ol>")
+                    in_olist = False
+                if not in_ulist:
                     html_lines.append("<ul>")
-                    in_list = True
+                    in_ulist = True
+                list_item = line[2:].strip()
+                html_lines.append(f"<li>{list_item}</li>")
+
+            elif line.startswith('* '):
+                if in_ulist:
+                    html_lines.append("</ul>")
+                    in_ulist = False
+                if not in_olist:
+                    html_lines.append("<ol>")
+                    in_olist = True
                 list_item = line[2:].strip()
                 html_lines.append(f"<li>{list_item}</li>")
 
             else:
-                if in_list:
+                if in_ulist:
                     html_lines.append("</ul>")
-                    in_list = False
+                    in_ulist = False
+                if in_olist:
+                    html_lines.append("</ol>")
+                    in_olist = False
                 html_lines.append(line)
 
-        if in_list:
+        if in_ulist:
             html_lines.append("</ul>")
+        if in_olist:
+            html_lines.append("</ol>")
 
         html_content = "\n".join(html_lines)
 
