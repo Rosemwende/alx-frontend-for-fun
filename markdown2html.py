@@ -27,9 +27,10 @@ if __name__ == "__main__":
         html_lines = []
         in_ulist = False
         in_olist = False
+        in_paragraph = False
 
         for line in content:
-            line = line.strip()
+            line = line.rstrip()
 
             heading_match = re.match(r'^(#{1,6})\s+(.*)', line)
             if heading_match:
@@ -39,6 +40,9 @@ if __name__ == "__main__":
                 if in_olist:
                     html_lines.append("</ol>")
                     in_olist = False
+                if in_paragraph:
+                    html_lines.append("</p>")
+                    in_paragraph = False
                 heading_level = len(heading_match.group(1))
                 heading_text = heading_match.group(2).strip()
                 html_lines.append(f"<h{heading_level}>{heading_text}</h{heading_level}>")
@@ -47,6 +51,9 @@ if __name__ == "__main__":
                 if in_olist:
                     html_lines.append("</ol>")
                     in_olist = False
+                if in_paragraph:
+                    html_lines.append("</p>")
+                    in_paragraph = False
                 if not in_ulist:
                     html_lines.append("<ul>")
                     in_ulist = True
@@ -57,25 +64,40 @@ if __name__ == "__main__":
                 if in_ulist:
                     html_lines.append("</ul>")
                     in_ulist = False
+                if in_paragraph:
+                    html_lines.append("</p>")
+                    in_paragraph = False
                 if not in_olist:
                     html_lines.append("<ol>")
                     in_olist = True
                 list_item = line[2:].strip()
                 html_lines.append(f"<li>{list_item}</li>")
 
-            else:
+            elif line.strip():
                 if in_ulist:
                     html_lines.append("</ul>")
                     in_ulist = False
                 if in_olist:
                     html_lines.append("</ol>")
                     in_olist = False
+                if not in_paragraph:
+                    html_lines.append("<p>")
+                    in_paragraph = True
+                else:
+                    html_lines.append("<br/>")
                 html_lines.append(line)
+
+            else:
+                if in_paragraph:
+                    html_lines.append("</p>")
+                    in_paragraph = False
 
         if in_ulist:
             html_lines.append("</ul>")
         if in_olist:
             html_lines.append("</ol>")
+        if in_paragraph:
+            html_lines.append("</p>")
 
         html_content = "\n".join(html_lines)
 
