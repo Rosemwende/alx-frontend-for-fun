@@ -1,95 +1,26 @@
-#!/usr/bin/python3
-"""
-Markdown to HTML converter with advanced parsing features
-"""
-
-import sys
-import re
-import hashlib
-
-
 def process_markdown_line(line):
     """
-    Processes a single line of Markdown and converts it to HTML
+    Processes a line of Markdown to convert it to the corresponding HTML
     """
-
     header_match = re.match(r"^(#{1,6}) (.+)", line)
     if header_match:
         level = len(header_match.group(1))
         content = header_match.group(2)
+        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
+        content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
         return f"<h{level}>{content}</h{level}>", "header"
 
     list_match = re.match(r"^- (.+)", line)
     if list_match:
-        return f"<li>{list_match.group(1)}</li>", "list"
+        item = list_match.group(1)
+        item = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", item)
+        item = re.sub(r"__(.+?)__", r"<em>\1</em>", item)
+        return f"<li>{item}</li>", "list"
 
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
 
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
 
-    line = re.sub(
-        r"\[\[(.+?)\]\]",
-        lambda match: hashlib.md5(match.group(1).encode()).hexdigest(),
-        line
-    )
-
-    line = re.sub(r"\(\((.+?)\)\)", lambda match: re.sub(r"[cC]", "", match.group(1)), line)
-
     line = line.replace("\n", "<br/>\n")
 
     return f"<p>{line}</p>", "paragraph"
-
-
-def convert_markdown_to_html(input_file, output_file):
-    """
-    Converts a Markdown file to an HTML file
-    """
-    try:
-        with open(input_file, "r") as infile, open(output_file, "w") as outfile:
-            list_open = False
-
-            for line in infile:
-                line = line.strip()
-                if not line:
-                    continue
-
-                result, line_type = process_markdown_line(line)
-
-                if line_type == "list":
-                    if not list_open:
-                        outfile.write("<ul>\n")
-                        list_open = True
-                    outfile.write(result + "\n")
-                else:
-                    if list_open:
-                        outfile.write("</ul>\n")
-                        list_open = False
-                    outfile.write(result + "\n")
-
-            if list_open:
-                outfile.write("</ul>\n")
-
-    except FileNotFoundError:
-        print(f"Error: {input_file} does not exist.", file=sys.stderr)
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
-
-
-def main():
-    """
-    Main entry point of the script
-    """
-    if len(sys.argv) != 3:
-        print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
-        sys.exit(1)
-
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
-
-    convert_markdown_to_html(input_file, output_file)
-
-
-if __name__ == "__main__":
-    main()
