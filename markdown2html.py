@@ -5,6 +5,7 @@ Markdown to HTML converter
 
 import sys
 import re
+import hashlib
 
 
 def process_markdown_line(line):
@@ -15,7 +16,7 @@ def process_markdown_line(line):
     if header_match:
         level = len(header_match.group(1))
         content = header_match.group(2)
-        return f"<h{level}>{content}</h{level}>"
+        return f"<h{level}>{content}</h{level}>", "header"
 
     list_match = re.match(r"^- (.+)", line)
     if list_match:
@@ -24,6 +25,14 @@ def process_markdown_line(line):
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
 
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
+
+    line = re.sub(
+        r"\[\[(.+?)\]\]",
+        lambda match: hashlib.md5(match.group(1).encode()).hexdigest(),
+        line
+    )
+
+    line = re.sub(r"\(\((.+?)\)\)", lambda match: re.sub(r"[cC]", "", match.group(1)), line)
 
     line = line.replace("\n", "<br/>\n")
 
@@ -61,6 +70,9 @@ def convert_markdown_to_html(input_file, output_file):
 
     except FileNotFoundError:
         print(f"Error: {input_file} does not exist.", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
 
