@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter
+Markdown to HTML converter with advanced parsing features
 """
 
 import sys
@@ -10,8 +10,9 @@ import hashlib
 
 def process_markdown_line(line):
     """
-    Processes a line of Markdown to convert it to the corresponding HTML
+    Processes a single line of Markdown and converts it to HTML
     """
+
     header_match = re.match(r"^(#{1,6}) (.+)", line)
     if header_match:
         level = len(header_match.group(1))
