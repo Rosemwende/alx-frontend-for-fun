@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter
+Markdown to HTML converter for ALX requirements
 """
 
 import sys
 import re
 
 
-def process_markdown_line(line, list_open):
+def process_markdown_line(line):
     """
     Process a single line of Markdown into corresponding HTML
     """
@@ -17,23 +17,18 @@ def process_markdown_line(line, list_open):
         content = header_match.group(2)
         content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
-        return f"<h{level}>{content}</h{level}>", "header", list_open
+        return f"<h{level}>{content}</h{level}>"
 
     list_match = re.match(r"^[-*] (.+)", line)
     if list_match:
         content = list_match.group(1)
         content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
-        if not list_open:
-            return f"<ul>\n<li>{content}</li>", "list", True
-        return f"<li>{content}</li>", "list", list_open
-
-    if list_open:
-        return "</ul>", "close_list", False
+        return f"<li>{content}</li>"
 
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
-    return f"<p>{line}</p>", "paragraph", list_open
+    return f"<p>{line}</p>"
 
 
 def convert_markdown_to_html(input_file, output_file):
@@ -49,12 +44,16 @@ def convert_markdown_to_html(input_file, output_file):
                 if not line:
                     continue
 
-                converted_line, line_type, list_open = process_markdown_line(line, list_open)
-
-                if line_type == "close_list":
-                    outfile.write(converted_line + "\n")
+                if re.match(r"^[-*] ", line):
+                    if not list_open:
+                        outfile.write("<ul>\n")
+                        list_open = True
+                    outfile.write(process_markdown_line(line) + "\n")
                 else:
-                    outfile.write(converted_line + "\n")
+                    if list_open:
+                        outfile.write("</ul>\n")
+                        list_open = False
+                    outfile.write(process_markdown_line(line) + "\n")
 
             if list_open:
                 outfile.write("</ul>\n")
