@@ -7,31 +7,38 @@ import sys
 import re
 
 
-def process_markdown_line(line):
+def process_markdown_line(line, list_open):
     """
-    Processes a single line of Markdown and converts it to HTML
-    Returns the converted HTML and the line type (e.g., 'list', 'paragraph')
+    Process a single line of Markdown into corresponding HTML
     """
     header_match = re.match(r"^(#{1,6}) (.+)", line)
     if header_match:
         level = len(header_match.group(1))
         content = header_match.group(2)
-        return f"<h{level}>{content}</h{level}>", "header"
+        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
+        content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
+        return f"<h{level}>{content}</h{level}>", "header", list_open
 
-    list_match = re.match(r"^- (.+)", line)
+    list_match = re.match(r"^[-*] (.+)", line)
     if list_match:
-        return f"<li>{list_match.group(1)}</li>", "list"
+        content = list_match.group(1)
+        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
+        content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
+        if not list_open:
+            return f"<ul>\n<li>{content}</li>", "list", True
+        return f"<li>{content}</li>", "list", list_open
+
+    if list_open:
+        return "</ul>", "close_list", False
 
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
-
-    return f"<p>{line}</p>", "paragraph"
+    return f"<p>{line}</p>", "paragraph", list_open
 
 
 def convert_markdown_to_html(input_file, output_file):
     """
-    Converts the contents of a Markdown file to an HTML file
-    Handles lists, headers, and inline formatting
+    Convert Markdown file to HTML file
     """
     try:
         with open(input_file, "r") as infile, open(output_file, "w") as outfile:
@@ -42,17 +49,11 @@ def convert_markdown_to_html(input_file, output_file):
                 if not line:
                     continue
 
-                converted_line, line_type = process_markdown_line(line)
+                converted_line, line_type, list_open = process_markdown_line(line, list_open)
 
-                if line_type == "list":
-                    if not list_open:
-                        outfile.write("<ul>\n")
-                        list_open = True
+                if line_type == "close_list":
                     outfile.write(converted_line + "\n")
                 else:
-                    if list_open:
-                        outfile.write("</ul>\n")
-                        list_open = False
                     outfile.write(converted_line + "\n")
 
             if list_open:
@@ -68,8 +69,7 @@ def convert_markdown_to_html(input_file, output_file):
 
 def main():
     """
-    Entry point of the script
-    Validates input arguments and initiates the Markdown to HTML conversion
+    Entry point of the script. Validates input arguments
     """
     if len(sys.argv) != 3:
         print("Usage: ./markdown2html.py <input_file> <output_file>", file=sys.stderr)
