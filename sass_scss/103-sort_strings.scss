@@ -4,7 +4,7 @@ $list_to_sort_0_sorted: sort($list_to_sort_0);
 
 $sorted_list_0: join($list_to_sort_0_sorted, ' ');
 
-@debug $sorted_list_0;
+@debug $sorted_list_0; // Expected output: "anna carrie felicia john kim zoe"
 
 $list_to_sort_1: bob anna sylvain john ludo colin patrick;
 
