@@ -1,5 +1,3 @@
-//a Sass file that sorts the variable $list_to_sort
-//and prints the sorted list in the debug output
 $list_to_sort: john anna zoe kim felicia carrie;
 
 $list_to_sort_sorted: sort($list_to_sort);
