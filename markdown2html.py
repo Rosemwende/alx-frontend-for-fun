@@ -27,6 +27,9 @@ def process_markdown_line(line):
         content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
         return f"<li>{content}</li>"
 
+    line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
+    line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
+
     md5_match = re.search(r"\[\[(.*?)\]\]", line)
     if md5_match:
         content = md5_match.group(1)
@@ -39,8 +42,6 @@ def process_markdown_line(line):
         content = content.replace('c', '').replace('C', '')
         line = line.replace(remove_c_match.group(0), content)
 
-    line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
-    line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
     return f"<p>{line}</p>"
 
 
