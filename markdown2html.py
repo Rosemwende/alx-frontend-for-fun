@@ -16,19 +16,19 @@ def process_markdown_line(line):
     if header_match:
         level = len(header_match.group(1))
         content = header_match.group(2)
-        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
+        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         return f"<h{level}>{content}</h{level}>"
 
     list_match = re.match(r"^[-*] (.+)", line)
     if list_match:
         content = list_match.group(1)
-        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         content = re.sub(r"__(.+?)__", r"<em>\1</em>", content)
+        content = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", content)
         return f"<li>{content}</li>"
 
-    line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
+    line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
 
     md5_match = re.search(r"\[\[(.*?)\]\]", line)
     if md5_match:
