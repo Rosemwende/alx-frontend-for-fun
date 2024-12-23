@@ -1,5 +1,11 @@
-$list_to_sort: john anna zoe kim felicia carrie;
+$list_to_sort_0: john anna zoe kim felicia carrie;
 
-$sorted_list: sort($list_to_sort);
+$list_to_sort_0_sorted: sort($list_to_sort_0);
 
-@debug join($sorted_list, ' ');
+@debug $list_to_sort_0_sorted;
+
+$list_to_sort_1: bob anna sylvain john ludo colin patrick;
+
+$list_to_sort_1_sorted: sort($list_to_sort_1);
+
+@debug $list_to_sort_1_sorted;
