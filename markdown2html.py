@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter with refined handling for tags
+Markdown to HTML converter with additional syntax support
 """
 
 import sys
 import re
+import hashlib
 
 
 def process_markdown_line(line):
@@ -13,6 +14,12 @@ def process_markdown_line(line):
     """
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
+    line = re.sub(
+        r"\[\[(.+?)\]\]",
+        lambda match: hashlib.md5(match.group(1).encode()).hexdigest(),
+        line,
+    )
+    line = re.sub(r"\(\((.+?)\)\)", lambda match: re.sub(r"[cC]", "", match.group(1)), line)
 
     header_match = re.match(r"^(#{1,6}) (.+)", line)
     if header_match:
@@ -23,7 +30,7 @@ def process_markdown_line(line):
     if list_match:
         return f"<li>{list_match.group(1)}</li>"
 
-    return line
+    return f"<p>{line}</p>"
 
 
 def convert_markdown_to_html(input_file, output_file):
@@ -48,10 +55,7 @@ def convert_markdown_to_html(input_file, output_file):
                     if in_list:
                         outfile.write("</ul>\n")
                         in_list = False
-                    processed_line = process_markdown_line(line)
-                    if not processed_line.startswith("<h"):
-                        processed_line = f"<p>{processed_line}</p>"
-                    outfile.write(processed_line + "\n")
+                    outfile.write(process_markdown_line(line) + "\n")
 
             if in_list:
                 outfile.write("</ul>\n")
