@@ -5,7 +5,6 @@ Markdown to HTML converter for ALX requirements
 
 import sys
 import re
-import hashlib
 
 
 def process_markdown_line(line):
@@ -29,18 +28,6 @@ def process_markdown_line(line):
 
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
-
-    md5_match = re.search(r"\[\[(.*?)\]\]", line)
-    if md5_match:
-        content = md5_match.group(1)
-        md5_hash = hashlib.md5(content.encode()).hexdigest()
-        line = line.replace(md5_match.group(0), md5_hash)
-
-    remove_c_match = re.search(r"\(\((.*?)\)\)", line)
-    if remove_c_match:
-        content = remove_c_match.group(1)
-        content = content.replace('c', '').replace('C', '')
-        line = line.replace(remove_c_match.group(0), content)
 
     return f"<p>{line}</p>"
 
