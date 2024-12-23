@@ -1,3 +1,5 @@
+@import '11-photos';
+
 $list-names: julien john sam damian;
 
 @each $name in $list-names {
