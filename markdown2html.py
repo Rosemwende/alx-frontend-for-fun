@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter for bold and emphasis syntax
+Markdown to HTML converter with refined handling for tags
 """
 
 import sys
@@ -23,7 +23,7 @@ def process_markdown_line(line):
     if list_match:
         return f"<li>{list_match.group(1)}</li>"
 
-    return f"<p>{line}</p>"
+    return line
 
 
 def convert_markdown_to_html(input_file, output_file):
@@ -48,8 +48,11 @@ def convert_markdown_to_html(input_file, output_file):
                     if in_list:
                         outfile.write("</ul>\n")
                         in_list = False
-                    outfile.write(process_markdown_line(line) + "\n")
-                    
+                    processed_line = process_markdown_line(line)
+                    if not processed_line.startswith("<h"):
+                        processed_line = f"<p>{processed_line}</p>"
+                    outfile.write(processed_line + "\n")
+
             if in_list:
                 outfile.write("</ul>\n")
 
