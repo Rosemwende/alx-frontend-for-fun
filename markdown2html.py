@@ -1,16 +1,25 @@
 #!/usr/bin/python3
-"""
-Markdown to HTML converter for ALX requirements
-"""
-
 import sys
 import re
+import hashlib
 
 
 def process_markdown_line(line):
     """
     Process a single line of Markdown into corresponding HTML.
     """
+    md5_match = re.search(r"\[\[(.*?)\]\]", line)
+    if md5_match:
+        content = md5_match.group(1)
+        md5_hash = hashlib.md5(content.encode()).hexdigest()
+        line = line.replace(md5_match.group(0), md5_hash)
+
+    remove_c_match = re.search(r"\(\((.*?)\)\)", line)
+    if remove_c_match:
+        content = remove_c_match.group(1)
+        content = re.sub(r"c", "", content, flags=re.IGNORECASE)
+        line = line.replace(remove_c_match.group(0), content)
+
     header_match = re.match(r"^(#{1,6}) (.+)", line)
     if header_match:
         level = len(header_match.group(1))
