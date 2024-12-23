@@ -1,7 +1,7 @@
 $list_to_sort_0: john anna zoe kim felicia carrie;
 $sorted_list_0: sort($list_to_sort_0);
-@debug join($sorted_list_0, ' |');
+@debug join($sorted_list_0, '|');
 
 $list_to_sort_1: bob anna sylvain john ludo colin patrick;
 $sorted_list_1: sort($list_to_sort_1);
-@debug join($sorted_list_1, ' |');
+@debug join($sorted_list_1, '|');
