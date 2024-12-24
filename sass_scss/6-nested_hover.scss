@@ -1,10 +1,8 @@
 // This file assigns text color #FF0000 to button
-//tags and #00FF00 on hover using nested declarations
-
+//tags and #00FF00 on hover using nested declaration
 button {
-  color: #FF0000;
-
-  &:hover {
-    color: #00FF00;
+	color: #FF0000;
+&:hover{
+	color: #00FF00;
   }
 }
