@@ -1,14 +1,16 @@
+/*a Sass file that sorts the variable $list_to_sort
+and prints the sorted list in the debug output*/
 $list_to_sort: john, anna, zoe, kim, felicia, carrie;
 
-@function sort-list($list) {
-  @return sort($list);
+@function sort-list($input-list) {
+  @return sort($input-list); // Sort the input list
 }
 
-$sorted_list: sort-list($list);
+$sorted_list: sort-list($list_to_sort);
 
-@function format-list($list) {
+@function format-list($input-list) {
   $result: "";
-  @each $item in $list {
+  @each $item in $input-list {
     $result: if($result == "", $item, "#{$result}|#{$item}");
   }
   @return $result;
