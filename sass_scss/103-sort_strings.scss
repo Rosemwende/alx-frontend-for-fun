@@ -4,6 +4,14 @@ $list_to_sort: john, anna, zoe, kim, felicia, carrie;
   @return sort($list);
 }
 
-$sorted_list: sort-list($list_to_sort);
+$sorted_list: sort-list($list);
 
-@debug $sorted_list;
+@function format-list($list) {
+  $result: "";
+  @each $item in $list {
+    $result: if($result == "", $item, "#{$result}|#{$item}");
+  }
+  @return $result;
+}
+
+@debug format-list($sorted_list);
