@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Markdown to HTML converter with additional syntax support
+Markdown to HTML converter with strict compliance to rules
 """
 
 import sys
@@ -8,15 +8,26 @@ import re
 import hashlib
 
 
-def process_markdown_line(line):
+def process_markdown_line(line, in_list):
     """
     Process a single line of Markdown to HTML
     """
+    # Handle headers
+    header_match = re.match(r"^(#{1,6}) (.+)", line)
+    if header_match:
+        header_level = len(header_match.group(1))
+        return f"<h{header_level}>{header_match.group(2)}</h{header_level}>", in_list
+
+    # Handle lists
+    list_match = re.match(r"^[-*] (.+)", line)
+    if list_match:
+        return f"<li>{list_match.group(1)}</li>", True
+
     # Handle bold and emphasis
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
 
-    # Handle custom syntax for MD5 and removing 'c'/'C'
+    # Handle MD5 and custom replacements
     line = re.sub(
         r"\[\[(.+?)\]\]",
         lambda match: hashlib.md5(match.group(1).encode()).hexdigest(),
@@ -24,19 +35,8 @@ def process_markdown_line(line):
     )
     line = re.sub(r"\(\((.+?)\)\)", lambda match: re.sub(r"[cC]", "", match.group(1)), line)
 
-    # Handle headers
-    header_match = re.match(r"^(#{1,6}) (.+)", line)
-    if header_match:
-        header_level = len(header_match.group(1))
-        return f"<h{header_level}>{header_match.group(2)}</h{header_level}>"
-
-    # Handle list items
-    list_match = re.match(r"^[-*] (.+)", line)
-    if list_match:
-        return f"<li>{list_match.group(1)}</li>"
-
-    # Default to paragraph
-    return f"<p>{line}</p>"
+    # Treat remaining text as a paragraph
+    return f"<p>{line}</p>", False
 
 
 def convert_markdown_to_html(input_file, output_file):
@@ -51,21 +51,26 @@ def convert_markdown_to_html(input_file, output_file):
                 line = line.strip()
 
                 if not line:
+                    # Close list if encountering an empty line
+                    if in_list:
+                        outfile.write("</ul>\n")
+                        in_list = False
                     continue
 
-                # Handle list opening and closing
-                if line.startswith(("-", "*")):
+                processed_line, is_list_item = process_markdown_line(line, in_list)
+
+                if is_list_item:
                     if not in_list:
                         outfile.write("<ul>\n")
                         in_list = True
-                    outfile.write(process_markdown_line(line) + "\n")
+                    outfile.write(processed_line + "\n")
                 else:
                     if in_list:
                         outfile.write("</ul>\n")
                         in_list = False
-                    outfile.write(process_markdown_line(line) + "\n")
+                    outfile.write(processed_line + "\n")
 
-            # Close any remaining open list
+            # Close any open list
             if in_list:
                 outfile.write("</ul>\n")
 
