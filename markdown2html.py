@@ -28,17 +28,19 @@ def process_markdown_line(line, in_list):
 
 def replace_markdown_syntax(line):
     """
-    Replace Markdown syntax (**bold**, __emphasis__) in a line
+    Replace Markdown syntax:
+    - Bold (**text**)
+    - Emphasis (__text__)
+    - MD5 Hashing ([[text]])
+    - Text transformations ((text))
     """
     line = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
     line = re.sub(r"__(.+?)__", r"<em>\1</em>", line)
-
     line = re.sub(
         r"\[\[(.+?)\]\]",
         lambda match: hashlib.md5(match.group(1).encode()).hexdigest(),
         line,
     )
-
     line = re.sub(
         r"\(\((.+?)\)\)",
         lambda match: re.sub(r"[cC]", "", match.group(1)),
@@ -62,6 +64,7 @@ def markdown_to_html(input_file, output_file):
                     if in_list:
                         html_lines.append("</ul>")
                         in_list = False
+                    html_lines.append("<br/>")
                     continue
 
                 html_line, list_detected = process_markdown_line(line, in_list)
