@@ -1,7 +1,9 @@
+// This Sass file changes button text color to #FF0000 and #00FF00 on hover
+
 button {
   color: #FF0000;
-}
 
-button:hover {
-  color: #00FF00;
+  &:hover {
+    color: #00FF00;
+  }
 }
